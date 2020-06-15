@@ -26,33 +26,31 @@ class HomeApp extends StatelessWidget {
           Container(
             color: Colors.green,
           ),
-          Column(
-            children: <Widget>[
-              AnimatedCard(),
-              ClipPath(
-                child: Container(
-                  height: 150,
-                  color: Colors.cyan,
-                ),
-                clipper: CustomPath(),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              CustomPaint(
-                child: ClipPath(
+          Padding(
+            padding: EdgeInsets.all(20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                AnimatedCard(),
+                ClipPath(
                   child: Container(
                     height: 150,
                     color: Colors.cyan,
                   ),
                   clipper: CustomPath(),
                 ),
-                painter: CustomPathPainter(),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-            ],
+                CustomPaint(
+                  child: ClipPath(
+                    child: Container(
+                      height: 150,
+                      color: Colors.cyan,
+                    ),
+                    clipper: CustomPath(),
+                  ),
+                  painter: CustomPathPainter(),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -76,11 +74,12 @@ class _AnimatedCardState extends State<AnimatedCard>
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 1),
+      duration: Duration(milliseconds: 1250),
     );
     _angleAnimation = Tween<double>(begin: 0, end: 180).animate(
       CurvedAnimation(
-        curve: Curves.easeInOutCubic,
+        curve: Curves.bounceOut,
+        reverseCurve: Curves.bounceIn,
         parent: _animationController,
       ),
     );
@@ -94,41 +93,38 @@ class _AnimatedCardState extends State<AnimatedCard>
             ? _animationController.reverse()
             : _animationController.forward();
       },
-      child: Padding(
-        padding: EdgeInsets.all(20),
-        child: RotationYTransition(
-          angle: _angleAnimation,
-          child1: Material(
-            elevation: 5,
-            child: Container(
-              alignment: Alignment.center,
-              color: Colors.red,
-              height: 150,
-              width: double.infinity,
-              child: Text(
-                "RED",
-                style: TextStyle(
-                  color: Colors.blue,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 36,
-                ),
+      child: RotationYTransition(
+        angle: _angleAnimation,
+        child1: Material(
+          elevation: 5,
+          child: Container(
+            alignment: Alignment.center,
+            color: Colors.red,
+            height: 150,
+            width: double.infinity,
+            child: Text(
+              "RED",
+              style: TextStyle(
+                color: Colors.blue,
+                fontWeight: FontWeight.bold,
+                fontSize: 36,
               ),
             ),
           ),
-          child2: Material(
-            elevation: 5,
-            child: Container(
-              alignment: Alignment.center,
-              color: Colors.blue,
-              height: 150,
-              width: double.infinity,
-              child: Text(
-                "BLUE",
-                style: TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 36,
-                ),
+        ),
+        child2: Material(
+          elevation: 5,
+          child: Container(
+            alignment: Alignment.center,
+            color: Colors.blue,
+            height: 150,
+            width: double.infinity,
+            child: Text(
+              "BLUE",
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+                fontSize: 36,
               ),
             ),
           ),
@@ -151,9 +147,8 @@ class RotationYTransition extends AnimatedWidget {
     final v = listenable as Animation<double>;
     final angle = (v.value / 360) * math.pi * 2;
     final t = Matrix4.identity()
-      ..setEntry(3, 2, 0.002)
+      ..setEntry(3, 2, 0.0015)
       ..rotateY(angle);
-    debugPrint("$angle");
 
     final resolvedChild = v.value > 90
         ? Transform(
