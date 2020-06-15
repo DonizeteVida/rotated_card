@@ -76,7 +76,7 @@ class _AnimatedCardState extends State<AnimatedCard>
       vsync: this,
       duration: Duration(milliseconds: 1250),
     );
-    _angleAnimation = Tween<double>(begin: 0, end: 180).animate(
+    _angleAnimation = Tween<double>(begin: 0, end: .5).animate(
       CurvedAnimation(
         curve: Curves.bounceOut,
         reverseCurve: Curves.bounceIn,
@@ -93,73 +93,74 @@ class _AnimatedCardState extends State<AnimatedCard>
             ? _animationController.reverse()
             : _animationController.forward();
       },
-      child: RotationYTransition(
-        angle: _angleAnimation,
-        child1: Material(
-          elevation: 5,
-          child: Container(
-            alignment: Alignment.center,
-            color: Colors.red,
-            height: 150,
-            width: double.infinity,
-            child: Text(
-              "RED",
-              style: TextStyle(
-                color: Colors.blue,
-                fontWeight: FontWeight.bold,
-                fontSize: 36,
+      child: RotationTransition(
+        animation: _angleAnimation,
+        builder: (value) {
+          if (value >= .25) {
+            return Transform(
+              transform: Matrix4.rotationY(-math.pi),
+              alignment: Alignment.center,
+              child: Material(
+                elevation: 5,
+                child: Container(
+                  alignment: Alignment.center,
+                  color: Colors.red,
+                  height: 150,
+                  width: double.infinity,
+                  child: Text(
+                    "RED",
+                    style: TextStyle(
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 36,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+          return Material(
+            elevation: 5,
+            child: Container(
+              alignment: Alignment.center,
+              color: Colors.blue,
+              height: 150,
+              width: double.infinity,
+              child: Text(
+                "BLUE",
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 36,
+                ),
               ),
             ),
-          ),
-        ),
-        child2: Material(
-          elevation: 5,
-          child: Container(
-            alignment: Alignment.center,
-            color: Colors.blue,
-            height: 150,
-            width: double.infinity,
-            child: Text(
-              "BLUE",
-              style: TextStyle(
-                color: Colors.red,
-                fontWeight: FontWeight.bold,
-                fontSize: 36,
-              ),
-            ),
-          ),
-        ),
+          );
+        },
+        transform: (v) {
+          return Matrix4.identity()
+            ..setEntry(3, 2, 0.0015)
+            ..rotateY(v * math.pi * 2);
+        },
       ),
     );
   }
 }
 
-class RotationYTransition extends AnimatedWidget {
-  final Widget child1;
-  final Widget child2;
-  RotationYTransition({
-    @required Animation<double> angle,
-    @required this.child1,
-    @required this.child2,
-  }) : super(listenable: angle);
+class RotationTransition extends AnimatedWidget {
+  final Matrix4 Function(double) transform;
+  final Widget Function(double) builder;
+  RotationTransition({
+    @required Animation<double> animation,
+    @required this.transform,
+    @required this.builder,
+  }) : super(listenable: animation);
   @override
   Widget build(BuildContext context) {
-    final v = listenable as Animation<double>;
-    final angle = (v.value / 360) * math.pi * 2;
-    final t = Matrix4.identity()
-      ..setEntry(3, 2, 0.0015)
-      ..rotateY(angle);
-
-    final resolvedChild = v.value > 90
-        ? Transform(
-            child: child2,
-            transform: Matrix4.rotationY(-math.pi),
-            alignment: Alignment.center,
-          )
-        : child1;
+    final animation = listenable as Animation<double>;
     return Transform(
-      child: resolvedChild,
-      transform: t,
+      transform: transform(animation.value),
+      child: builder(animation.value),
       alignment: Alignment.center,
     );
   }
