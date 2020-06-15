@@ -89,9 +89,16 @@ class _AnimatedCardState extends State<AnimatedCard>
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        _animationController.status == AnimationStatus.completed
-            ? _animationController.reverse()
-            : _animationController.forward();
+        switch (_animationController.status) {
+          case AnimationStatus.dismissed:
+            _animationController.forward();
+            break;
+          case AnimationStatus.completed:
+            _animationController.reverse();
+            break;
+          default:
+          //Do nothing
+        }
       },
       child: RotationTransition(
         animation: _angleAnimation,
